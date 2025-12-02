@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mercyhurst Football — Defensive Stats (2025)</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <h1>Mercyhurst Football — Defensive Stats (2025)</h1>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="overview">
+        <h2>Overview</h2>
+        <p>
+          This project shows defensive stats for the Mercyhurst Football team
+          in the year 2025. It compares each defensive player's year-end stats,
+          their average stats for the selected week, the team's stats for that 
+          week, and the opponent's team offensive stats for that week.
+        </p>
+      </section>
+
+      <section id="web-scraping">
+        <h2>Web Scraping</h2>
+        <p>Data was scraped off of the Mercyhurst athletcis webiste, hurstatheltics.com.
+            The specific page use was https://hurstathletics.com/sports/football/stats.
+            This page contained all the tables I scraped to get my data. Tools used in Python
+            included BeautifulSoup, Pandas and Requests.
+        </p>
+
+        <fieldset class="scrape-control">
+          <legend>Preview option:</legend>
+          <label><input type="radio" name="scrape" value="player" checked> Player's Defensive Stats</label>
+          <label><input type="radio" name="scrape" value="team"> Team Defensive Stats</label>
+          <label><input type="radio" name="scrape" value="opponent"> Opponent Offensive Stats</label>
+        </fieldset>
+
+        <div id="scrape-output" class="scrape-output" aria-live="polite">
+          <pre><code id="scrape-code">Select an option to view the scraping snippet.</code></pre>
+        </div>
+
+        <p>* Assistance from the internal Google Gemini AI tool within Google Colab was used to help generate
+            the web scraping code snippets shown above. Help was normally asked with statements 
+            like, "Simplify the code" and "Change the code to work".
+        </p>
+      </section>
+
+      <section id="database">
+        <h2>Database</h2>
+        <p>Placeholder — content to be added later.</p>
+      </section>
+
+      <section id="web-application">
+        <h2>Web Application</h2>
+        <p>Placeholder — content to be added later.</p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
