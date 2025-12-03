@@ -171,4 +171,123 @@ page = requests.get('https://hurstathletics.com/sports/football/stats').text
     const checked = radioNodes.find(r => r.checked) || radioNodes[0];
     if (checked) showSnippet(checked.value);
     }
+
+    // --- Tabs and CSV table loading ---
+    const tabButtons = Array.from(document.querySelectorAll('.tab-button'));
+    const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+
+    function activateTab(targetId) {
+      tabButtons.forEach(b => {
+        const isActive = b.dataset.target === targetId;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      tabPanels.forEach(p => {
+        if (p.id === targetId) {
+          p.classList.add('active');
+          p.hidden = false;
+        } else {
+          p.classList.remove('active');
+          p.hidden = true;
+        }
+      });
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+        activateTab(target);
+        if (target === 'tab-hurst') loadHurstTables();
+        if (target === 'tab-vs') loadVsTables();
+      });
+    });
+
+    // Simple CSV parser that handles quoted fields
+    function parseCSV(text) {
+      const rows = [];
+      const lines = text.split(/\r?\n/);
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.trim() === '') continue;
+        const cells = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let j = 0; j < line.length; j++) {
+          const ch = line[j];
+          if (ch === '"') {
+            if (inQuotes && line[j+1] === '"') { // escaped quote
+              cur += '"'; j++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (ch === ',' && !inQuotes) {
+            cells.push(cur);
+            cur = '';
+          } else {
+            cur += ch;
+          }
+        }
+        cells.push(cur);
+        rows.push(cells.map(c => c.trim()));
+      }
+      return rows;
+    }
+
+    function makeTableFromArray(arr) {
+      if (!arr || arr.length === 0) return document.createTextNode('No data');
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      arr[0].forEach(h => {
+        const th = document.createElement('th'); th.textContent = h; headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      for (let i = 1; i < arr.length; i++) {
+        const tr = document.createElement('tr');
+        arr[i].forEach(cell => {
+          const td = document.createElement('td'); td.textContent = cell; tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      return table;
+    }
+
+    async function loadCsvToContainer(path, containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error('Failed to fetch ' + path);
+        const text = await res.text();
+        const arr = parseCSV(text);
+        const table = makeTableFromArray(arr);
+        container.innerHTML = '';
+        container.appendChild(table);
+      } catch (err) {
+        container.textContent = 'Error loading CSV: ' + err.message;
+      }
+    }
+
+    let hurstLoaded = false;
+    async function loadHurstTables() {
+      if (hurstLoaded) return;
+      hurstLoaded = true;
+      await loadCsvToContainer('/hurst_defensive_stats_2025.csv', 'table-hurst_defensive_stats_2025');
+      await loadCsvToContainer('/players_avg_tackles.csv', 'table-players_avg_tackles');
+    }
+
+    let vsLoaded = false;
+    async function loadVsTables() {
+      if (vsLoaded) return;
+      vsLoaded = true;
+      await loadCsvToContainer('/opponent_offense_stats.csv', 'table-opponent_offense_stats');
+      await loadCsvToContainer('/team_defensive_stats.csv', 'table-team_defensive_stats');
+      await loadCsvToContainer('/yards/attemp_vs_Total_tackles.csv', 'table-attemp_vs_Total_tackles');
+    }
+
+    // initialize first tab active
+    activateTab('tab-overview');
 });

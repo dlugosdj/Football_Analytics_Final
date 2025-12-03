@@ -1,7 +1,8 @@
 :root{
   --bg:#f7f9fb;
   --card:#ffffff;
-  --accent:#003366;
+  --accent:#0b6b2f; /* Mercyhurst green accent */
+  --accent-2:#0f8a44;
   --muted:#555;
 }
 *{box-sizing:border-box}
@@ -13,7 +14,7 @@ body{
   line-height:1.45;
 }
 header{
-  background:linear-gradient(90deg,var(--accent), #1a4b7a);
+  background:linear-gradient(90deg,var(--accent), var(--accent-2));
   color:#fff;
   padding:18px 16px;
 }
@@ -21,17 +22,46 @@ header{
 .header-inner h1{margin:0;font-size:1.15rem;text-align:center}
 
 .container{max-width:980px;margin:28px auto;padding:0 16px}
-section{background:var(--card);border-radius:8px;padding:18px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
-section h2{margin:0 0 8px 0;color:var(--accent)}
+/* content cards */
+.container .tab-panel section,
+.container .tab-panel > h2,
+.table-card{
+  background:var(--card);
+  border-radius:8px;
+  padding:18px;
+  margin-bottom:16px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);
+}
+.container .tab-panel h2{margin:0 0 12px 0;color:var(--accent)}
+.container .tab-panel section h2{margin:0 0 8px 0;color:var(--accent)}
 fieldset.scrape-control{border:1px solid rgba(0,0,0,0.06);padding:10px;border-radius:6px;display:flex;gap:12px;align-items:center}
 fieldset.scrape-control legend{font-weight:600}
 fieldset.scrape-control label{font-size:0.95rem}
 .scrape-output pre{background:#0f1720;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto;max-height:360px}
 .scrape-output code{white-space:pre-wrap;display:block}
+/* Tabs */
+.tab-bar{display:flex;gap:8px;margin-bottom:18px}
+.tab-button{background:transparent;border:1px solid rgba(0,0,0,0.07);padding:8px 12px;border-radius:6px;cursor:pointer}
+.tab-button.active{background:var(--accent);color:#fff;border-color:transparent}
+.tab-panel{display:block}
+.tab-panel[hidden]{display:none}
+.table-wrap{overflow:auto}
+.table-wrap table{width:100%;border-collapse:collapse}
+.table-wrap th,.table-wrap td{padding:6px 8px;border:1px solid #e6eef8;text-align:left;font-size:0.95rem}
+.table-card h3{margin:0 0 8px 0}
+/* Layout for Hurst Defense: two tables side-by-side */
+#hurst-tables{display:flex;gap:16px;flex-wrap:wrap}
+#hurst-tables .table-card{flex:1 1 48%;min-width:300px}
+/* Layout for Hurst vs Opp: three tables side-by-side */
+#vs-tables{display:flex;gap:16px;flex-wrap:wrap}
+#vs-tables .table-card{flex:1 1 32%;min-width:260px}
 footer{padding:16px;text-align:center;color:var(--muted);font-size:0.9rem}
 .build-info{position:fixed;right:12px;bottom:12px;background:#111;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;opacity:0.85}
 
 @media (min-width:900px){
   .header-inner h1{font-size:1.5rem}
   .logo{height:72px}
+  /* ensure wide layouts show tables nicely */
+  #hurst-tables .table-card{min-width:360px}
+  #vs-tables .table-card{min-width:280px}
 }
