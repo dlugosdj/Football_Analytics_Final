@@ -1,5 +1,5 @@
 :root{
-  --bg:#f7f9fb;
+  --bg:#e6f3ff; /* light blue page background */
   --card:#ffffff;
   --accent:#0b6b2f; /* Mercyhurst green accent */
   --accent-2:#0f8a44;
@@ -55,6 +55,13 @@ fieldset.scrape-control label{font-size:0.95rem}
 /* Layout for Hurst vs Opp: three tables side-by-side */
 #vs-tables{display:flex;gap:16px;flex-wrap:wrap}
 #vs-tables .table-card{flex:1 1 32%;min-width:260px}
+/* when filtered: stack vertically and make full width */
+#vs-tables.filtered{flex-direction:column}
+#vs-tables.filtered .table-card{flex:1 1 100%;min-width:0}
+/* vs controls */
+.vs-controls{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.vs-controls label{font-weight:600}
+.vs-controls select{padding:6px 8px;border-radius:6px;border:1px solid rgba(0,0,0,0.08)}
 footer{padding:16px;text-align:center;color:var(--muted);font-size:0.9rem}
 .build-info{position:fixed;right:12px;bottom:12px;background:#111;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;opacity:0.85}
 

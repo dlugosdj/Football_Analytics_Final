@@ -255,37 +255,124 @@ page = requests.get('https://hurstathletics.com/sports/football/stats').text
       return table;
     }
 
-    async function loadCsvToContainer(path, containerId) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
+    // Fetch CSV and return parsed array
+    async function loadCsvReturnArray(path) {
       try {
         const res = await fetch(path);
         if (!res.ok) throw new Error('Failed to fetch ' + path);
         const text = await res.text();
         const arr = parseCSV(text);
-        const table = makeTableFromArray(arr);
-        container.innerHTML = '';
-        container.appendChild(table);
+        return arr;
       } catch (err) {
-        container.textContent = 'Error loading CSV: ' + err.message;
+        console.error('Error loading CSV', path, err);
+        return null;
       }
+    }
+
+    function renderTableFromArray(containerId, arr) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      if (!arr) {
+        container.textContent = 'No data available';
+        return;
+      }
+      const table = makeTableFromArray(arr);
+      container.innerHTML = '';
+      container.appendChild(table);
     }
 
     let hurstLoaded = false;
     async function loadHurstTables() {
       if (hurstLoaded) return;
       hurstLoaded = true;
-      await loadCsvToContainer('/hurst_defensive_stats_2025.csv', 'table-hurst_defensive_stats_2025');
-      await loadCsvToContainer('/players_avg_tackles.csv', 'table-players_avg_tackles');
+      const arr1 = await loadCsvReturnArray('/hurst_defensive_stats_2025.csv');
+      renderTableFromArray('table-hurst_defensive_stats_2025', arr1);
+      const arr2 = await loadCsvReturnArray('/players_avg_tackles.csv');
+      renderTableFromArray('table-players_avg_tackles', arr2);
     }
 
+    // Variables to hold parsed arrays for filtering
     let vsLoaded = false;
+    let opponentArr = null, teamArr = null, attArr = null;
+
+    async function populateOpponentSelect(values) {
+      const sel = document.getElementById('vs-opponent-select');
+      if (!sel) return;
+      // clear leaving the All Weeks option
+      sel.innerHTML = '<option value="__all__">All Weeks</option>';
+      const sorted = Array.from(values).sort();
+      for (const v of sorted) {
+        const opt = document.createElement('option');
+        opt.value = v; opt.textContent = v; sel.appendChild(opt);
+      }
+      sel.addEventListener('change', () => {
+        const val = sel.value;
+        filterVsTables(val);
+      });
+    }
+
+    function getUniqueOpponentsFromArrays(arrs) {
+      const set = new Set();
+      for (const arr of arrs) {
+        if (!arr || arr.length === 0) continue;
+        const header = arr[0].map(h => h.toLowerCase());
+        const idx = header.indexOf('opponent');
+        if (idx === -1) continue;
+        for (let i = 1; i < arr.length; i++) {
+          const row = arr[i];
+          if (row[idx]) set.add(row[idx]);
+        }
+      }
+      return set;
+    }
+
+    function filterArrayByOpponent(arr, opponent) {
+      if (!arr) return null;
+      if (opponent === '__all__') return arr;
+      if (arr.length === 0) return arr;
+      const header = arr[0].map(h => h.toLowerCase());
+      const idx = header.indexOf('opponent');
+      if (idx === -1) return arr;
+      const out = [arr[0]];
+      for (let i = 1; i < arr.length; i++) {
+        if (arr[i][idx] === opponent) out.push(arr[i]);
+      }
+      return out;
+    }
+
     async function loadVsTables() {
       if (vsLoaded) return;
       vsLoaded = true;
-      await loadCsvToContainer('/opponent_offense_stats.csv', 'table-opponent_offense_stats');
-      await loadCsvToContainer('/team_defensive_stats.csv', 'table-team_defensive_stats');
-      await loadCsvToContainer('/yards/attemp_vs_Total_tackles.csv', 'table-attemp_vs_Total_tackles');
+      opponentArr = await loadCsvReturnArray('/opponent_offense_stats.csv');
+      teamArr = await loadCsvReturnArray('/team_defensive_stats.csv');
+      attArr = await loadCsvReturnArray('/yards/attemp_vs_Total_tackles.csv');
+
+      // initial render (All Weeks)
+      renderTableFromArray('table-opponent_offense_stats', opponentArr);
+      renderTableFromArray('table-team_defensive_stats', teamArr);
+      renderTableFromArray('table-attemp_vs_Total_tackles', attArr);
+
+      // populate opponent select with unique opponents across arrays
+      const opponents = getUniqueOpponentsFromArrays([opponentArr, teamArr, attArr]);
+      await populateOpponentSelect(opponents);
+    }
+
+    function filterVsTables(opponent) {
+      const a1 = filterArrayByOpponent(opponentArr, opponent);
+      const a2 = filterArrayByOpponent(teamArr, opponent);
+      const a3 = filterArrayByOpponent(attArr, opponent);
+      renderTableFromArray('table-opponent_offense_stats', a1);
+      renderTableFromArray('table-team_defensive_stats', a2);
+      renderTableFromArray('table-attemp_vs_Total_tackles', a3);
+      // If filtering to a single opponent, stack the tables vertically for comparison
+      const vsContainer = document.getElementById('vs-tables');
+      if (vsContainer) {
+        if (opponent && opponent !== '__all__') {
+          vsContainer.classList.add('filtered');
+        } else {
+          vsContainer.classList.remove('filtered');
+        }
+      }
     }
 
     // initialize first tab active

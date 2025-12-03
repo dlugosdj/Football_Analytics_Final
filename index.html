@@ -15,10 +15,10 @@
 
     <main class="container">
       <div class="tabs">
-        <nav class="tab-bar" role="tablist" aria-label="Main tabs">
+          <nav class="tab-bar" role="tablist" aria-label="Main tabs">
           <button role="tab" aria-selected="true" class="tab-button active" data-target="tab-overview">Project Overview</button>
-          <button role="tab" aria-selected="false" class="tab-button" data-target="tab-hurst">Hurst Defense</button>
-          <button role="tab" aria-selected="false" class="tab-button" data-target="tab-vs">Hurst vs Opp</button>
+          <button role="tab" aria-selected="false" class="tab-button" data-target="tab-hurst">Mercyhurst Defense</button>
+          <button role="tab" aria-selected="false" class="tab-button" data-target="tab-vs">Mercyhurst vs Opponent</button>
         </nav>
 
         <div class="tab-panels">
@@ -30,20 +30,21 @@
                 in the year 2025. It compares each defensive player's year-end stats
                 and their average tackles for the year. It also compares the team's 
                 stats for the selected week, and the opponent's team offensive stats
-                for that week.
+                for that week. The goal is to show how the defensive players finished
+                the year and how the team's defense performed against each opponent.
               </p>
             </section>
 
             <section id="web-scraping">
               <h2>Web Scraping</h2>
-              <p>Data was scraped off of the Mercyhurst athletcis webiste, hurstatheltics.com.
+              <p>Data was scraped off of the Mercyhurst athletics website, hurstathletics.com.
                   The specific page use was https://hurstathletics.com/sports/football/stats.
                   This page contained all the tables I scraped to get my data. Tools used in Python
                   included BeautifulSoup, Pandas and Requests.
               </p>
 
               <fieldset class="scrape-control">
-                <legend>Preview option:</legend>
+                <legend>Select which web scraping code you want to view:</legend>
                 <label><input type="radio" name="scrape" value="player" checked> Player's Defensive Stats</label>
                 <label><input type="radio" name="scrape" value="team"> Team Defensive Stats</label>
                 <label><input type="radio" name="scrape" value="opponent"> Opponent Offensive Stats</label>
@@ -53,9 +54,10 @@
                 <pre><code id="scrape-code">Select an option to view the scraping snippet.</code></pre>
               </div>
 
-              <p>* Assistance from the internal Google Gemini AI tool within Google Colab was used to help generate
+              <p>* Assistance from the Google Gemini AI tool within Google Colab was used to help generate
                   the web scraping code snippets shown above. Help was normally asked with statements 
-                  like, "Simplify the code" and "Change the code to work".
+                  like, but not limited to, "Simplify the code" and "Change the code to work without causing
+                  errors".
               </p>
             </section>
 
@@ -63,15 +65,47 @@
               <h2>Database</h2>
               <p>The database created is consisted of three csv files. One containing Mercyhurst's
                  defensive player's stats, one containing the opposing team's offensive stats,and one
-                 containing Mercyhurst's team defensive stats. From that database, two other csv files
+                 containing Mercyhurst's team defensive stats. All three were wed scraped from the
+                 hurstathletics.com website, shown above. From that database, two other csv files
                  were created. One containing defensive player's average tackles per game and one
                  containing the opposing teams rushing and passing attempts compared to Mercyhurst's
-                 total team tackles.</p>
+                 total team tackles. The two csv files I created, along with the three original csv files,
+                 where all used within my web app.
+              </p>
+              <p>*These are the SQL queries used to create the tables that make up my two csv files.</p>
+              <p>-- Players Average tackle per game</p>
+              <p>select col as '#', Player, TOT/GP as 'Average Tackles Per Game'</p>
+              <p>from hurst_defensive_stats_2025</p>
+              <p>where TOT/GP > 0.0</p>
+              <p>order by TOT/GP desc;</p>
+
+              <p>-- Yards/Attempt vs Total Tackles</p>
+              <p>select opp.Date, opp.Opponent, opp.Rushing_YDS / opp.Rushing_ATT as 'Rushing Yards/Attempt', opp.Receiving_YDS / opp.Receiving_ATT as 'Receiving Yards/Attempt', team.Tackles_TOT as 'Total Tackles'</p>
+              <p>from opponent_offensive_stats as opp</p>
+              <p>inner join team_defensive_stats as team on opp.Date = team.Date</p>
+              <p>order by Tackles_TOT desc;</p>
             </section>
 
             <section id="web-application">
               <h2>Web Application</h2>
-              <p>Placeholder — content to be added later.</p>
+              <p>This web application is broken into two tab, aside from the project overview tab.
+                 The 'Mercyhurst Defense' tab shows two tables. 'Mercyhurst Defensive Stats (2025)'
+                 contains all defensive stats from players who recorded defensive stats for the 2025
+                 season. The 'Player's Average Tackles per Game' table shows the average tackels per
+                 game for those players, sorted highest average to lowest. The 'Mercyhurst vs Opponent'
+                 tab consists of three tables. The 'Opponent Offensive Stats' table shows the offensive
+                 stats for each team Mercyhurst played against. The 'Mercyhurst Defensive Stats' table
+                 shows the team defensive stats Mercyhurst has against each opponent. The 'Attempts vs
+                 Mercyhurst Total Tackles' table compares the rushing yards per attempt and receiving
+                 yards per attempt for each opponent against Mercyhurst's total tackles for that game.
+                 Users can narrow their view using the controls provided allowing them to select just
+                 one week at a time, or showing all weeks together. </p>
+            </section>
+            <section id="github-repo">
+              <h2>Project's GitHub Repository</h2>
+              <p>
+                <a href="https://github.com/dlugosdj/Football_Analytics_Final" target="_blank" rel="noopener noreferrer">https://github.com/dlugosdj/Football_Analytics_Final</a>
+              </p>
             </section>
           </section>
 
@@ -83,14 +117,21 @@
                 <div class="table-wrap" id="table-hurst_defensive_stats_2025">Loading...</div>
               </div>
               <div class="table-card" id="hurst-table-2">
-                <h3>Players Average Tackles per Game</h3>
+                <h3>Player's Average Tackles per Game</h3>
                 <div class="table-wrap" id="table-players_avg_tackles">Loading...</div>
               </div>
             </div>
           </section>
+          
 
           <section id="tab-vs" class="tab-panel" hidden>
-            <h2>Mercyhurst vs Opp</h2>
+            <h2>Mercyhurst vs Opponent</h2>
+            <div class="vs-controls">
+              <label for="vs-opponent-select">Show opponent:</label>
+              <select id="vs-opponent-select">
+                <option value="__all__">All Weeks</option>
+              </select>
+            </div>
             <div id="vs-tables">
               <div class="table-card">
                 <h3>Opponent Offensive Stats</h3>
